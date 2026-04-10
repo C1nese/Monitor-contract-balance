@@ -1,0 +1,16 @@
+{
+  "name": "vedereyue",
+  "version": "1.0.0",
+  "description": "USD1 balance monitor with web UI and Bark notifications",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ethers": "^6.16.0",
+    "express": "^5.2.1"
+  }
+}

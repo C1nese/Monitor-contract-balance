@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>USD1 余额监控</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">以太坊主网监听</p>
+          <h1>USD1 余额监控面板</h1>
+          <p class="hero-copy">
+            监控地址 <code>0x003Ca23Fd5F0ca87D01F6eC6CD14A8AE60c2b97D</code> 的 <code>USD1</code>
+            余额。低于你设置的金额时，会同时触发 Bark、浏览器声音和页面提示。
+          </p>
+        </div>
+        <div class="hero-actions">
+          <button id="check-now-btn" class="primary" type="button">立即检查</button>
+          <button id="test-bark-btn" class="secondary" type="button">测试 Bark</button>
+          <a
+            id="etherscan-link"
+            class="ghost"
+            href="https://etherscan.io/token/0x8d0D000Ee44948FC98c9B98A4FA4921476f08B0d?a=0x003Ca23Fd5F0ca87D01F6eC6CD14A8AE60c2b97D"
+            target="_blank"
+            rel="noreferrer"
+          >
+            打开 Etherscan
+          </a>
+        </div>
+      </header>
+
+      <main class="grid">
+        <section class="card status-card" id="status-card">
+          <div class="card-title-row">
+            <h2>实时状态</h2>
+            <span id="status-pill" class="pill neutral">加载中</span>
+          </div>
+
+          <div class="alarm-panel">
+            <div class="alarm-actions">
+              <button id="alarm-toggle-btn" class="secondary" type="button">启用浏览器报警声</button>
+              <button id="desktop-notify-btn" class="secondary" type="button">启用桌面通知</button>
+            </div>
+            <div class="alarm-controls">
+              <label class="alarm-slider-wrap" for="alarm-sound-type">
+                <span>报警声音类型</span>
+                <select id="alarm-sound-type">
+                  <option value="siren">警笛声</option>
+                  <option value="beeper">蜂鸣器</option>
+                  <option value="ring">电话铃</option>
+                  <option value="pulse">脉冲警报</option>
+                  <option value="piercing">尖锐高频</option>
+                </select>
+              </label>
+              <label class="alarm-slider-wrap" for="alarm-volume">
+                <span>报警声强度</span>
+                <input id="alarm-volume" type="range" min="20" max="100" step="1" value="85" />
+              </label>
+              <button id="alarm-test-btn" class="secondary" type="button">测试浏览器声音</button>
+            </div>
+            <p id="alarm-message" class="alarm-copy">
+              浏览器会拦截自动播放声音，所以每个浏览器第一次使用时都需要先点一次启用按钮。
+            </p>
+            <p id="desktop-notify-message" class="field-hint">
+              桌面通知建议一并开启。页面缩小或切到后台时，会更容易第一时间看到告警。
+            </p>
+          </div>
+
+          <div class="metric-grid">
+            <div class="metric">
+              <span class="metric-label">当前余额</span>
+              <strong id="balance-value">-</strong>
+            </div>
+            <div class="metric">
+              <span id="threshold-label" class="metric-label">下一档阈值</span>
+              <strong id="threshold-value">-</strong>
+            </div>
+            <div class="metric">
+              <span id="diff-label" class="metric-label">高于阈值</span>
+              <strong id="diff-value">-</strong>
+            </div>
+            <div class="metric">
+              <span class="metric-label">轮询间隔</span>
+              <strong id="interval-value">-</strong>
+            </div>
+          </div>
+
+          <dl class="detail-list">
+            <div>
+              <dt>当前使用 RPC</dt>
+              <dd id="rpc-current">-</dd>
+            </div>
+            <div>
+              <dt>RPC 候选</dt>
+              <dd id="rpc-candidates">-</dd>
+            </div>
+            <div>
+              <dt>RPC 延迟</dt>
+              <dd id="rpc-latency">-</dd>
+            </div>
+            <div>
+              <dt>全部阈值</dt>
+              <dd id="thresholds-list">-</dd>
+            </div>
+            <div>
+              <dt>链上查询耗时</dt>
+              <dd id="check-latency">-</dd>
+            </div>
+            <div>
+              <dt>最近检查</dt>
+              <dd id="checked-at">-</dd>
+            </div>
+            <div>
+              <dt>最近成功</dt>
+              <dd id="success-at">-</dd>
+            </div>
+            <div>
+              <dt>最近通知</dt>
+              <dd id="notify-at">-</dd>
+            </div>
+            <div>
+              <dt>通知结果</dt>
+              <dd id="notify-message">-</dd>
+            </div>
+            <div>
+              <dt>错误信息</dt>
+              <dd id="error-message">-</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="card">
+          <h2>监控配置</h2>
+          <form id="config-form">
+            <label>
+              主网 RPC 列表
+              <textarea
+                id="rpcUrls"
+                name="rpcUrls"
+                rows="5"
+                placeholder="一行一个 RPC，程序会自动选择最快的那个"
+                required
+              ></textarea>
+            </label>
+            <label>
+              代币合约地址
+              <input id="tokenAddress" name="tokenAddress" type="text" required />
+            </label>
+            <label>
+              钱包地址
+              <input id="walletAddress" name="walletAddress" type="text" required />
+            </label>
+            <label>
+              低于这些金额报警
+              <textarea
+                id="thresholds"
+                name="thresholds"
+                rows="5"
+                placeholder="一行一个阈值，例如 9000000、7000000、6000000"
+                required
+              ></textarea>
+            </label>
+            <label>
+              轮询间隔（秒）
+              <input id="intervalSeconds" name="intervalSeconds" type="number" min="3" step="1" required />
+            </label>
+            <label>
+              告警冷却（分钟）
+              <input id="notifyCooldownMinutes" name="notifyCooldownMinutes" type="number" min="0" step="1" required />
+            </label>
+
+            <div class="form-actions">
+              <button type="submit" class="primary">保存监控配置</button>
+              <span id="save-result" class="inline-message"></span>
+            </div>
+          </form>
+        </section>
+
+        <section class="card">
+          <h2>Bark 配置</h2>
+          <form id="bark-form">
+            <label>
+              Bark 服务地址
+              <input id="barkServer" name="barkServer" type="url" placeholder="https://api.day.app" required />
+            </label>
+            <label>
+              Device Key
+              <input id="barkDeviceKey" name="barkDeviceKey" type="password" placeholder="用于推送到手机" />
+            </label>
+            <p id="bark-device-key-hint" class="field-hint">当前尚未保存 Device Key</p>
+            <label>
+              分组
+              <input id="barkGroup" name="barkGroup" type="text" />
+            </label>
+            <label>
+              声音
+              <input id="barkSound" name="barkSound" type="text" />
+            </label>
+            <label>
+              连续响铃
+              <select id="barkCall" name="barkCall">
+                <option value="false">false</option>
+                <option value="true">true</option>
+              </select>
+            </label>
+            <label>
+              音量（0-10）
+              <input id="barkVolume" name="barkVolume" type="number" min="0" max="10" step="1" />
+            </label>
+            <label>
+              等级
+              <select id="barkLevel" name="barkLevel">
+                <option value="timeSensitive">timeSensitive</option>
+                <option value="active">active</option>
+                <option value="critical">critical</option>
+                <option value="passive">passive</option>
+              </select>
+            </label>
+            <label>
+              图标链接（可选）
+              <input id="barkIcon" name="barkIcon" type="url" />
+            </label>
+            <label>
+              跳转链接（可选）
+              <input id="barkUrl" name="barkUrl" type="url" />
+            </label>
+            <label>
+              点击链接（可选）
+              <input id="barkClickUrl" name="barkClickUrl" type="url" />
+            </label>
+
+            <div class="form-actions">
+              <button type="submit" class="primary">保存 Bark 配置</button>
+              <span id="bark-result" class="inline-message"></span>
+            </div>
+          </form>
+        </section>
+      </main>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
